@@ -1,0 +1,47 @@
+@using ApexCharts
+@using Temperature.Models
+@implements IDialogContentComponent<Measurement[]?>
+
+<FluentMessageBarProvider Section="MESSAGES_DIALOG" MaxMessageCount="1" />
+
+<ApexChart TItem="Measurement"
+               Title="Measurement">
+
+        <ApexPointSeries TItem="Measurement"
+                         Items="@Content"
+                         Name="Temperature"
+                         SeriesType="SeriesType.Line"
+                         XValue="e => e.Id"
+                         YValue="e=> (decimal)e.Value" />
+        @* <ApexRangeSeries TItem="Simple"  Items="@lines" 
+                         XValue="e => e.id"
+                         YValue="e=> 91" /> *@
+
+    </ApexChart>
+
+@* @if (Dialog != null)
+{
+    <FluentStack Orientation="Microsoft.FluentUI.AspNetCore.Components.Orientation.Vertical" Style="border: 1px solid red; padding: 10px">
+        <span>This section is visible only when component is hosted inside a Dialog</span>
+        <FluentButton OnClick="@(() => ToggleDialogPrimaryActionButton(true))">Enable Dialog Primary Action</FluentButton>
+        <FluentButton OnClick="@(() => ToggleDialogPrimaryActionButton(false))">Disable Dialog Primary Action</FluentButton>
+    </FluentStack>
+} *@
+
+@code {
+    [Parameter]
+    public Measurement[]?  Content { get; set; } = default!;
+
+    [CascadingParameter]
+    public FluentDialog? Dialog { get; set; }
+
+    @* private void ToggleDialogPrimaryActionButton(bool enable)
+    {
+        Dialog!.TogglePrimaryActionButton(enable);
+    } *@
+
+    List<Simple>  lines = new List<Simple>() { new Simple() };
+    public class Simple {
+        public int id = 91;
+    }
+}

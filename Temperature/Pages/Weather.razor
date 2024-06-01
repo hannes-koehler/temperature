@@ -1,0 +1,109 @@
+﻿@page "/measurements"
+@using System.Text.Json
+
+@using ApexCharts
+@using Temperature.Models
+@inject HttpClient Http
+@inject IDialogService DialogService
+<PageTitle>Weather</PageTitle>
+
+<h1>Weather</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <FluentToolbar>
+    <FluentButton @onclick="@OpenDialogAsync" Appearance="Appearance.Accent" slot="start"
+        IconStart="@(new Icons.Regular.Size16.DataTrending())" />
+         <FluentBadge>@(forecasts.Count()) items</FluentBadge>
+    <FluentButton @onclick="@OnRefreshAsync" Appearance="Appearance.Accent" slot="end"
+        IconStart="@(new Icons.Regular.Size16.ArrowRepeatAll())" />
+
+
+</FluentToolbar>
+    <FluentPullToRefresh
+        Style="border: calc(var(--stroke-width)* 1px) solid var(--neutral-stroke-rest); border-radius: calc(var(--control-corner-radius)* 1px); width: 100%;"
+        Direction="PullDirection.Down" OnRefreshAsync="OnRefreshAsync">
+        <FluentDataGrid Id="weathergrid" Items="@forecasts" GridTemplateColumns="1fr 1fr 1fr 2fr" TGridItem=Measurement
+            @ref="grid" ShowHover="true" GenerateHeader="GenerateHeaderOption.Sticky" ResizableColumns="true"
+            Pagination="@pagination">
+            <PropertyColumn Title="Id" Property="@(c => c.Id!)" Sortable="true"
+                Align="Microsoft.FluentUI.AspNetCore.Components.Align.Start" Format="D4" />
+            <PropertyColumn Title="Name" Property="@(c => c!.Name)" Sortable="true"
+                Align="Microsoft.FluentUI.AspNetCore.Components.Align.Center" />
+            <PropertyColumn Title="Temp. (C)" Property="@(c => c!.Value)" Sortable="true"
+                Align="Microsoft.FluentUI.AspNetCore.Components.Align.Center" Format="F" />
+        </FluentDataGrid>
+        <FluentPaginator State="@pagination" />
+    </FluentPullToRefresh>
+    @*<ApexChart TItem="Measurement"
+Title="Measurement">
+
+<ApexPointSeries TItem="Measurement"
+Items="forecasts.Reverse()"
+Name="Temperature"
+SeriesType="SeriesType.Line"
+XValue="e => e.Id"
+YValue="e=> (decimal)e.Value" />
+
+</ApexChart> *@
+}
+
+@code {
+    FluentDataGrid<Measurement>? grid;
+    // FluentSwitch? _clearToggle;
+    private IQueryable<Measurement>? forecasts;
+    PaginationState pagination = new PaginationState { ItemsPerPage = 25 };
+    protected override async Task OnInitializedAsync()
+    {
+        grid?.SetLoadingState(true);
+        forecasts = (await Http.GetFromJsonAsync<List<Measurement>>("/api/items"))!.AsQueryable();
+        grid?.SetLoadingState(false);
+    }
+
+    async Task<bool> OnRefreshAsync()
+    {
+        grid?.SetLoadingState(true);
+        forecasts = (await Http.GetFromJsonAsync<List<Measurement>>("/api/items"))!.AsQueryable();
+        grid?.SetLoadingState(false);
+        return true;
+    }
+
+
+    private async Task OpenDialogAsync()
+    {
+
+        DialogParameters parameters = new()
+            {
+                //Title = $"Graph",
+          //     PrimaryAction = "Yes",
+                PrimaryActionEnabled = true,
+                SecondaryActionEnabled = false,
+                SecondaryAction="",
+                //SecondaryAction = "No",
+                Width = "50%",
+
+                TrapFocus = true,
+                Modal = true,
+                PreventScroll = true
+            };
+
+        IDialogReference dialog = await DialogService.ShowDialogAsync<Graph>(forecasts.ToArray(), parameters);
+        DialogResult? result = await dialog.Result;
+
+
+        if (result.Data is not null)
+        {
+
+        }
+        else
+        {
+
+        }
+    }
+}
