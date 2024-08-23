@@ -6,10 +6,11 @@
              <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
              @* <FluentNavLink Href="counter" Icon="@(new Icons.Regular.Size20.NumberSymbolSquare())" IconColor="Color.Accent">Counter</FluentNavLink> *@
              <FluentNavLink Href="measurements" Icon="@(new Icons.Regular.Size20.DataLine())" IconColor="Color.Accent">Measurements</FluentNavLink>
+             <FluentNavLink Href="calc" Icon="@(new Icons.Regular.Size20.Calculator())" IconColor="Color.Accent">Calculate</FluentNavLink>
         </FluentNavMenu>
     </nav>
 </div>
 
 @code {
-    private bool expanded = true;
+    private bool expanded = false;
 }

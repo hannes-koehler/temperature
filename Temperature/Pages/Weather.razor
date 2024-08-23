@@ -1,10 +1,12 @@
 ﻿@page "/measurements"
 @using System.Text.Json
+@using Microsoft.FluentUI.AspNetCore.Components
 
 @using ApexCharts
 @using Temperature.Models
 @inject HttpClient Http
 @inject IDialogService DialogService
+@inject IMessageService MessageService
 <PageTitle>Weather</PageTitle>
 
 <h1>Weather</h1>
@@ -20,7 +22,7 @@ else
     <FluentToolbar>
     <FluentButton @onclick="@OpenDialogAsync" Appearance="Appearance.Accent" slot="start"
         IconStart="@(new Icons.Regular.Size16.DataTrending())" />
-         <FluentBadge>@(forecasts.Count()) items</FluentBadge>
+    <FluentBadge>@(forecasts.Count()) items</FluentBadge>
     <FluentButton @onclick="@OnRefreshAsync" Appearance="Appearance.Accent" slot="end"
         IconStart="@(new Icons.Regular.Size16.ArrowRepeatAll())" />
 
@@ -29,11 +31,14 @@ else
     <FluentPullToRefresh
         Style="border: calc(var(--stroke-width)* 1px) solid var(--neutral-stroke-rest); border-radius: calc(var(--control-corner-radius)* 1px); width: 100%;"
         Direction="PullDirection.Down" OnRefreshAsync="OnRefreshAsync">
-        <FluentDataGrid Id="weathergrid" Items="@forecasts" GridTemplateColumns="1fr 1fr 1fr 2fr" TGridItem=Measurement
-            @ref="grid" ShowHover="true" GenerateHeader="GenerateHeaderOption.Sticky" ResizableColumns="true"
-            Pagination="@pagination">
+        <!-- Items="@forecasts"   Virtualize="true" ItemsProvider="@MeasurementItemsProvider" Loading="true" ItemSize="46" -->
+        <FluentDataGrid Id="weathergrid" GridTemplateColumns="1fr 1fr 1fr 2fr" 
+            TGridItem=Measurement @ref="grid" ShowHover="true" GenerateHeader="GenerateHeaderOption.Sticky"
+            Items="@forecasts" 
+           
+            ResizableColumns="true" Pagination="@pagination"> 
             <PropertyColumn Title="Id" Property="@(c => c.Id!)" Sortable="true"
-                Align="Microsoft.FluentUI.AspNetCore.Components.Align.Start" Format="D4" />
+                Align="Microsoft.FluentUI.AspNetCore.Components.Align.Start" Format="D6" />
             <PropertyColumn Title="Name" Property="@(c => c!.Name)" Sortable="true"
                 Align="Microsoft.FluentUI.AspNetCore.Components.Align.Center" />
             <PropertyColumn Title="Temp. (C)" Property="@(c => c!.Value)" Sortable="true"
@@ -61,19 +66,57 @@ YValue="e=> (decimal)e.Value" />
     PaginationState pagination = new PaginationState { ItemsPerPage = 25 };
     protected override async Task OnInitializedAsync()
     {
-        grid?.SetLoadingState(true);
-        forecasts = (await Http.GetFromJsonAsync<List<Measurement>>("/api/items"))!.AsQueryable();
-        grid?.SetLoadingState(false);
+                    @* forecasts = (await Http.GetFromJsonAsync<List<Measurement>>("?pagesize=500"))!.AsQueryable(); *@
+                        await OnRefreshAsync();
+        @* MeasurementItemsProvider = new GridItemsProvider<Measurement>(async (query) =>
+        {
+            var count = query.Count;
+            var start = query.StartIndex;
+           // var x = query.ApplySorting();
+            // Fetch data from your service (e.g., OData endpoint)
+            // var result = await CustomerService.GetCustomersAsync(query);
+            var result = (await Http.GetFromJsonAsync<List<Measurement>>($"?pagesize={count}&page={start/count}"))!;//.AsQueryable();
+                return  GridItemsProviderResult.From(
+                items: result,
+                totalItemCount: 123);
+                
+        }); *@
     }
 
     async Task<bool> OnRefreshAsync()
     {
-        grid?.SetLoadingState(true);
-        forecasts = (await Http.GetFromJsonAsync<List<Measurement>>("/api/items"))!.AsQueryable();
-        grid?.SetLoadingState(false);
-        return true;
+        try
+        {
+            grid?.SetLoadingState(true);
+           // SetItemsProvider();
+            forecasts = (await Http.GetFromJsonAsync<List<Measurement>>("?pagesize=5000"))!.AsQueryable();
+            grid?.SetLoadingState(false);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _ = MessageService.ShowMessageBarAsync($"cant get measurements from {Http.BaseAddress}", MessageIntent.Error);
+            return false;
+        }
     }
+    private GridItemsProvider<Measurement> MeasurementItemsProvider = default!;
 
+    private void SetItemsProvider()
+    {
+        @* MeasurementItemsProvider = new GridItemsProvider<Measurement>(async (query) =>
+        {
+            var count = query.Count;
+            var start = query.StartIndex;
+           // var x = query.ApplySorting();
+            // Fetch data from your service (e.g., OData endpoint)
+            // var result = await CustomerService.GetCustomersAsync(query);
+            var result = (await Http.GetFromJsonAsync<List<Measurement>>($"?pagesize={count}&page={start/count}"))!;//.AsQueryable();
+                return  GridItemsProviderResult.From(
+                items: result,
+                totalItemCount: 123);
+                
+        }); *@
+    }
 
     private async Task OpenDialogAsync()
     {
@@ -81,10 +124,10 @@ YValue="e=> (decimal)e.Value" />
         DialogParameters parameters = new()
             {
                 //Title = $"Graph",
-          //     PrimaryAction = "Yes",
+                // PrimaryAction = "Yes",
                 PrimaryActionEnabled = true,
                 SecondaryActionEnabled = false,
-                SecondaryAction="",
+                SecondaryAction = "",
                 //SecondaryAction = "No",
                 Width = "50%",
 

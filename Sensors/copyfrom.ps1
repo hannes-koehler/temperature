@@ -1,0 +1,1 @@
+scp -rp hannesk@192.168.2.52:~/temperature .

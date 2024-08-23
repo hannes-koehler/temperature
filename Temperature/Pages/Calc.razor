@@ -1,0 +1,93 @@
+@page "/calc"
+@inject IDialogService DialogService
+<PageTitle>Calc</PageTitle>
+
+<FluentLayout Style="margin-top: 10px;">
+    <FluentHeader>
+        @addon
+        <FluentSpacer />
+        Verdünnen
+    </FluentHeader>
+
+    <FluentBodyContent>
+        <FluentCard>
+            <FluentLabel>Ist:</FluentLabel>
+            <FluentSlider Min="5" Max="90" Step="1" ValueChanged="RecalcS" TValue="double" Value="@source">
+                <FluentSliderLabel Position="@source">@source</FluentSliderLabel>
+                <FluentSliderLabel Position="10">10</FluentSliderLabel>
+                <FluentSliderLabel Position="20">20</FluentSliderLabel>
+                <FluentSliderLabel Position="30">30</FluentSliderLabel>
+                <FluentSliderLabel Position="40">40</FluentSliderLabel>
+                <FluentSliderLabel Position="50">50</FluentSliderLabel>
+                <FluentSliderLabel Position="60">60</FluentSliderLabel>
+                <FluentSliderLabel Position="70">70</FluentSliderLabel>
+                <FluentSliderLabel Position="80">80</FluentSliderLabel>
+            </FluentSlider>
+            <FluentSlider Min="5" Max="@source" Step="1" Label="Soll:" ValueChanged="@RecalcT" TValue="double"
+                Value="@target">
+                <FluentSliderLabel Position="@target">@target</FluentSliderLabel>
+                <FluentSliderLabel Position="10">10</FluentSliderLabel>
+                <FluentSliderLabel Position="20">20</FluentSliderLabel>
+                <FluentSliderLabel Position="30">30</FluentSliderLabel>
+                <FluentSliderLabel Position="40">40</FluentSliderLabel>
+                <FluentSliderLabel Position="50">50</FluentSliderLabel>
+                <FluentSliderLabel Position="60">60</FluentSliderLabel>
+                <FluentSliderLabel Position="70">70</FluentSliderLabel>
+                <FluentSliderLabel Position="80">80</FluentSliderLabel>
+            </FluentSlider>
+
+            <FluentSlider Min="100" Max="5000" Step="10" Label="Menge:" ValueChanged="@RecalcA" TValue="double"
+                Value="@amount">
+                <FluentSliderLabel Position="@amount">@amount</FluentSliderLabel>
+                <FluentSliderLabel Position="100">100</FluentSliderLabel>
+                <FluentSliderLabel Position="200">200</FluentSliderLabel>
+                <FluentSliderLabel Position="300">300</FluentSliderLabel>
+                <FluentSliderLabel Position="400">400</FluentSliderLabel>
+                <FluentSliderLabel Position="500">500</FluentSliderLabel>
+                <FluentSliderLabel Position="600">600</FluentSliderLabel>
+                <FluentSliderLabel Position="700">700</FluentSliderLabel>
+                <FluentSliderLabel Position="800">800</FluentSliderLabel>
+                <FluentSliderLabel Position="900">900</FluentSliderLabel>
+                <FluentSliderLabel Position="1000">1000</FluentSliderLabel>
+            </FluentSlider>
+
+            @* <FluentLabel>Ist Menge:</FluentLabel> *@
+            @* <FluentNumberField @bind-Value=amount Step="0.1"/>
+            <FluentButton Appearance="Appearance.Accent" @onclick="Calculate">Calculate</FluentButton> *@
+        </FluentCard>
+
+    </FluentBodyContent>
+    <FluentFooter Style="@("height: 40px; color: white; text-align: center;")">
+        Footer Text
+    </FluentFooter>
+</FluentLayout>
+@code {
+    private double target = 43;
+    private double source = 63.5;
+
+    private double amount = 0.5;
+    private double addon = 0;
+
+    private void RecalcS(double t)
+    {
+        source = t;
+        Calculate();
+    }
+    private void RecalcT(double t)
+    {
+        target = t;
+        Calculate();
+    }
+
+    private void RecalcA(double t)
+    {
+        amount = t;
+        Calculate();
+    }
+    private void Calculate()
+    {
+        // wavol = grvol * (galk-gewalk)/gewalk
+        addon = amount * (source - target) / target;
+        //DialogService.ShowInfo("Hey", "My info dialog");
+    }
+}
